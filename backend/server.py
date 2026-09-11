@@ -11,12 +11,12 @@ from fastapi import APIRouter, Depends, FastAPI, Header, HTTPException, status
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, Field
 from starlette.middleware.cors import CORSMiddleware
-
+import certifi
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / ".env")
 mongo_url = os.environ["MONGO_URL"]
-client = AsyncIOMotorClient(mongo_url)
+client = AsyncIOMotorClient(mongo_url, tlsCAFile=certifi.where())
 db = client[os.environ.get("DB_NAME", "forgefit")]
 
 app = FastAPI(title="ForgeFit API")
@@ -182,7 +182,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
+"""
 @app.on_event("startup")
 async def setup_indexes() -> None:
     await db.users.create_index("email", unique=True)
@@ -194,4 +194,7 @@ async def setup_indexes() -> None:
 
 @app.on_event("shutdown")
 async def shutdown_db_client() -> None:
-    client.close()
+    client.close()"""
+@app.get("/")
+async def root():
+    return {"status": "ok", "message": "ForgeFit API is running"}
